@@ -13,7 +13,7 @@ void autoscaling(double* const x, const int n, const int m) {
 	const int s = n * m;
 	int j;
 	for (j = 0; j < m; j++) {
-		double sd, Ex = 0.0, Exx = 0.0, *ptr;		
+		double sd, Ex = 0.0, Exx = 0.0, *ptr;
 		for (ptr = x + j; ptr < x + s; ptr += m) {
 			sd = *ptr;
 			Ex += sd;
@@ -52,7 +52,7 @@ void det_cores(const double* const x, double* const c, const int n, const int m,
 
 int get_cluster(const double* const x, const double* const c, const int m, int k) {
 	int res = --k;
-	double minD = get_distance(x, c + k * m, m);	
+	double minD = get_distance(x, c + k * m, m);
 	while (k--) {
 		const double curD = get_distance(x, c + k * m, m);
 		if (curD < minD) {
@@ -63,31 +63,38 @@ int get_cluster(const double* const x, const double* const c, const int m, int k
 	return res;
 }
 
-char check_splitting(const double *x, double *c, int* const res, const int n, const int m, const int k) {
-	double *newCores = (double*)malloc(k * m * sizeof(double));
-	memset(newCores, 0, k * m * sizeof(double));
-	int *nums = (int*)malloc(k * sizeof(int));
+void det_start_partition(const double* const x, const double* const c, int* const y, int* const nums, int n, const int m, const int k) {
 	memset(nums, 0, k * sizeof(int));
-	char flag = 0;
-	int i, j, f;
+	while (n--) {
+		const int l = get_cluster(x + n * m, c, m, k);
+		y[n] = l;
+		nums[l]++;
+	}
+}
+
+char check_partition(const double* const x, double* const c, int* const y, int* const nums, const int n, const int m, const int k) {
+	memset(c, 0, k * m * sizeof(double));
+	int i, j;
 	for (i = 0; i < n; i++) {
-		f = get_cluster(x + i * m, c, m, k);
-		if (f != res[i]) flag = 1;
-		res[i] = f;
-		nums[f]++;
-		f *= m;
+		const int f = y[i] * m, l = i * m;
 		for (j = 0; j < m; j++) {
-			newCores[f + j] += x[i * m + j];
+			c[f + j] += x[l + j];
 		}
 	}
 	for (i = 0; i < k; i++) {
-		f = nums[i];
-		for (j = i * m; j < i * m + m; j++) {
-			c[j] = newCores[j] / f;
+		const int f = nums[i], l = i * m;
+		for (j = 0; j < m; j++) {
+			c[l + j] /= f;
 		}
-	}	
-	free(newCores);
-	free(nums);
+	}
+	memset(nums, 0, k * sizeof(int));
+	char flag = 0; 
+	for (i = 0; i < n; i++) {
+		const int f = get_cluster(x + i * m, c, m, k);
+		if (y[i] != f) flag = 1;
+		y[i] = f;
+		nums[f]++;
+	}
 	return flag;
 }
 
@@ -97,8 +104,10 @@ void kmeans(const double* const X, int* const y, const int n, const int m, const
 	autoscaling(x, n, m);
 	double *c = (double*)malloc(k * m * sizeof(double));
 	det_cores(x, c, n, m, k);
-	memset(y, -1, n * sizeof(int));
-	while (check_splitting(x, c, y, n, m, k));
+	int *nums = (int*)malloc(k * sizeof(int));
+	det_start_partition(x, c, y, nums, n, m, k);
+	while (check_partition(x, c, y, nums, n, m, k));
 	free(x);
 	free(c);
+	free(nums);
 }

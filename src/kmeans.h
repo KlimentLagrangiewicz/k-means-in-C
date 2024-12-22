@@ -12,7 +12,8 @@ void autoscaling(double* const x, const int n, const int m);
 char constr(const int *y, const int val, int s);
 void det_cores(const double* const x, double* const c, const int n, const int m, const int k);
 int get_cluster(const double* const x, const double* const c, const int m, int k);
-char check_splitting(const double *x, double *c, int* const res, const int n, const int m, const int k);
+void det_start_partition(const double* const x, const double* const c, int* const y, int* const nums, int n, const int m, const int k);
+char check_partition(const double* const x, double* const c, int* const y, int* const nums, const int n, const int m, const int k);
 void kmeans(const double* const X, int* const y, const int n, const int m, const int k);
 
 #endif

@@ -10,8 +10,6 @@ LDFLAGS      = -lm
 
 C_SOURCES    = $(wildcard $(SRCDIR)/*.c)
 
-C_INCLUDES   = $(wildcard $(SRCDIR)/*.h)
-
 C_OBJECTS    = $(C_SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 
 .PHONY: all

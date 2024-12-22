@@ -2,7 +2,7 @@
 
 void fscanf_data(const char *fn, double *x, const int n) {
 	FILE *fl = fopen(fn, "r");
-	if (fl == NULL) {
+	if (!fl) {
 		printf("Error in opening %s file...\n", fn);
 		exit(1);
 	}
@@ -16,7 +16,7 @@ void fscanf_data(const char *fn, double *x, const int n) {
 
 void fprintf_result(const char *fn, const int* const y, const int n) {
 	FILE *fl = fopen(fn, "a");
-	if (fl == NULL) {
+	if (!fl) {
 		printf("Error in opening %s result file...\n", fn);
 		exit(1);
 	}
@@ -25,13 +25,13 @@ void fprintf_result(const char *fn, const int* const y, const int n) {
 	for (i = 0; i < n; i++) {
 		fprintf(fl, "Object [%d] = %d;\n", i, y[i]);
 	}
-	fprintf(fl, "\n");
+	fputc('\n', fl);
 	fclose(fl);
 }
 
 void fprintf_full_result(const char *fn, const int* const y, const int n, const double p) {
 	FILE *fl = fopen(fn, "a");
-	if (fl == NULL) {
+	if (!fl) {
 		printf("Error in opening %s result file...\n", fn);
 		exit(1);
 	}
@@ -40,19 +40,19 @@ void fprintf_full_result(const char *fn, const int* const y, const int n, const 
 	for (i = 0; i < n; i++) {
 		fprintf(fl, "Object [%d] = %d;\n", i, y[i]);
 	}
-	fprintf(fl, "\n");
+	fputc('\n', fl);
 	fclose(fl);
 }
 
 void fscanf_splitting(const char *fn, int *y, const int n) {
 	FILE *fl = fopen(fn, "r");
-	if (fl == NULL) {
+	if (!fl) {
 		printf("Can't access %s file with ideal splitting for reading...\n", fn);
 		exit(1);
 	}
 	int i = 0;
 	while (i < n && !feof(fl)) {
-		if (fscanf(fl, "%d", y + i) != 1) {
+		if (fscanf(fl, "%d", y + i) == 0) {
 			printf("Error in reading the perfect partition from %s file\n", fn);
 			exit(1);
 		}
