@@ -50,3 +50,6 @@ Run the program:
 ```
 ./bin/k-means-in-C ./datasets/iris/data.txt 150 4 3 ./datasets/iris/new_result.txt ./datasets/iris/res.txt
 ```
+```
+./bin/k-means-in-C ./datasets/wine/data.txt 178 13 3 ./datasets/wine/new_result.txt ./datasets/wine/res.txt
+```

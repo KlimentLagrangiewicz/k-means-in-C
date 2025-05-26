@@ -9,7 +9,7 @@ void fscanf_data(const char *fn, double *x, const int n) {
 	int i = 0;
 	while (i < n && !feof(fl)) {
 		if (fscanf(fl, "%lf", x + i) == 0) {}
-		i++;
+		++i;
 	}
 	fclose(fl);
 }
@@ -22,7 +22,7 @@ void fprintf_result(const char *fn, const int* const y, const int n) {
 	}
 	fprintf(fl, "Result of k-means clustering...\n");
 	int i;
-	for (i = 0; i < n; i++) {
+	for (i = 0; i < n; ++i) {
 		fprintf(fl, "Object [%d] = %d;\n", i, y[i]);
 	}
 	fputc('\n', fl);
@@ -37,7 +37,7 @@ void fprintf_full_result(const char *fn, const int* const y, const int n, const 
 	}
 	fprintf(fl, "Result of k-means clustering...\nPrecision of k-means clustering = %.5lf;\n", p);
 	int i;
-	for (i = 0; i < n; i++) {
+	for (i = 0; i < n; ++i) {
 		fprintf(fl, "Object [%d] = %d;\n", i, y[i]);
 	}
 	fputc('\n', fl);
@@ -56,17 +56,17 @@ void fscanf_splitting(const char *fn, int *y, const int n) {
 			printf("Error in reading the perfect partition from %s file\n", fn);
 			exit(1);
 		}
-		i++;
+		++i;
 	}
 	fclose(fl);
 }
 
 double get_precision(int *x, int *y, const int n) {
 	int i, j, yy = 0, ny = 0;
-	for (i = 0; i < n; i++) {
-		for (j = i + 1; j < n; j++) {
-			if (x[i] == x[j] && y[i] == y[j]) yy++;
-			if (x[i] != x[j] && y[i] == y[j]) ny++;
+	for (i = 0; i < n; ++i) {
+		for (j = i + 1; j < n; ++j) {
+			if (x[i] == x[j] && y[i] == y[j]) ++yy;
+			if (x[i] != x[j] && y[i] == y[j]) ++ny;
 		}
 	}
 	return yy == 0 && ny == 0 ? 0.0 : (double)yy / (double)(yy + ny);

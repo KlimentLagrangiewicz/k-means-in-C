@@ -2,9 +2,12 @@
 
 double get_distance(const double *x1, const double *x2, int m) {
 	double d, r = 0.0;
-	while (m--) {
-		d = *(x1++) - *(x2++);
+	while (m > 0) {
+		d = *x1 - *x2;
 		r += d * d;
+		++x1;
+		++x2;
+		--m;
 	}
 	return r;
 }
@@ -12,7 +15,7 @@ double get_distance(const double *x1, const double *x2, int m) {
 void autoscaling(double* const x, const int n, const int m) {
 	const int s = n * m;
 	int j;
-	for (j = 0; j < m; j++) {
+	for (j = 0; j < m; ++j) {
 		double sd, Ex = 0.0, Exx = 0.0, *ptr;
 		for (ptr = x + j; ptr < x + s; ptr += m) {
 			sd = *ptr;
@@ -21,16 +24,20 @@ void autoscaling(double* const x, const int n, const int m) {
 		}
 		Exx /= n;
 		Ex /= n;
-		sd = sqrt(Exx - Ex * Ex);
+		sd = fabs(Exx - Ex * Ex);
+		if (sd == 0.0) sd = 1.0;
+		sd = 1.0 / sqrt(sd);
 		for (ptr = x + j; ptr < x + s; ptr += m) {
-			*ptr = (*ptr - Ex) / sd;
+			*ptr = (*ptr - Ex) * sd;
 		}
 	}
 }
 
 char constr(const int *y, const int val, int s) {
-	while (s--) {
-		if (*(y++) == val) return 1;
+	while (s > 0) {
+		if (*y == val) return 1;
+		++y;
+		--s;
 	}
 	return 0;
 }
@@ -39,7 +46,7 @@ void det_cores(const double* const x, double* const c, const int n, const int m,
 	int *nums = (int*)malloc(k * sizeof(int));
 	srand((unsigned int)time(NULL));
 	int i;
-	for (i = 0; i < k; i++) {
+	for (i = 0; i < k; ++i) {
 		int val = rand() % n;
 		while (constr(nums, val, i)) {
 			val = rand() % n;
@@ -52,11 +59,12 @@ void det_cores(const double* const x, double* const c, const int n, const int m,
 
 int get_cluster(const double* const x, const double* const c, const int m, int k) {
 	int res = --k;
-	double minD = get_distance(x, c + k * m, m);
-	while (k--) {
-		const double curD = get_distance(x, c + k * m, m);
-		if (curD < minD) {
-			minD = curD;
+	double min_d = get_distance(x, c + k * m, m);
+	while (k > 0) {
+		--k;
+		const double cur_d = get_distance(x, c + k * m, m);
+		if (cur_d < min_d) {
+			min_d = cur_d;
 			res = k;
 		}
 	}
@@ -65,35 +73,38 @@ int get_cluster(const double* const x, const double* const c, const int m, int k
 
 void det_start_partition(const double* const x, const double* const c, int* const y, int* const nums, int n, const int m, const int k) {
 	memset(nums, 0, k * sizeof(int));
-	while (n--) {
+	while (n > 0) {
+		--n;
 		const int l = get_cluster(x + n * m, c, m, k);
 		y[n] = l;
-		nums[l]++;
+		++nums[l];
 	}
 }
 
 char check_partition(const double* const x, double* const c, int* const y, int* const nums, const int n, const int m, const int k) {
 	memset(c, 0, k * m * sizeof(double));
 	int i, j;
-	for (i = 0; i < n; i++) {
-		const int f = y[i] * m, l = i * m;
-		for (j = 0; j < m; j++) {
-			c[f + j] += x[l + j];
+	for (i = 0; i < n; ++i) {
+		double* const c_yi = c + y[i] * m;
+		const double* const x_i = x + i * m;
+		for (j = 0; j < m; ++j) {
+			c_yi[j] += x_i[j];
 		}
 	}
-	for (i = 0; i < k; i++) {
-		const int f = nums[i], l = i * m;
-		for (j = 0; j < m; j++) {
-			c[l + j] /= f;
+	for (i = 0; i < k; ++i) {
+		const double f = nums[i];
+		double* const c_i = c + i * m;
+		for (j = 0; j < m; ++j) {
+			c_i[j] /= f;
 		}
 	}
 	memset(nums, 0, k * sizeof(int));
 	char flag = 0; 
-	for (i = 0; i < n; i++) {
+	for (i = 0; i < n; ++i) {
 		const int f = get_cluster(x + i * m, c, m, k);
 		if (y[i] != f) flag = 1;
 		y[i] = f;
-		nums[f]++;
+		++nums[f];
 	}
 	return flag;
 }
