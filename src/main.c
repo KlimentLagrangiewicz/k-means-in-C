@@ -21,16 +21,15 @@ int main(int argc, char **argv) {
 		puts("Memory allocation error...");
 		exit(1);
 	}	
-	int *y = (int*)malloc(n * sizeof(int));
+	fscanf_data(argv[1], x, n * m);
+	clock_t cl = clock();
+	int *y = kmeans(x, n, m, k);	
+	cl = clock() - cl;
 	if (!y) {
 		puts("Memory allocation error...");
 		free(x);
 		exit(1);
-	}	
-	fscanf_data(argv[1], x, n * m);
-	clock_t cl = clock();
-	kmeans(x, y, n, m, k);
-	cl = clock() - cl;
+	}
 	if (argc > 6) {
 		int *ideal = (int*)malloc(n * sizeof(int));
 		if (!ideal) fprintf_result(argv[5], y, n);

@@ -2,22 +2,21 @@
 
 double get_distance(const double *x1, const double *x2, int m) {
 	double d, r = 0.0;
-	while (m > 0) {
+	for (; m > 0; --m) {
 		d = *x1 - *x2;
 		r += d * d;
 		++x1;
 		++x2;
-		--m;
 	}
 	return r;
 }
 
 void autoscaling(double* const x, const int n, const int m) {
-	const int s = n * m;
+	const double* const end = x + n * m;
 	int j;
 	for (j = 0; j < m; ++j) {
 		double sd, Ex = 0.0, Exx = 0.0, *ptr;
-		for (ptr = x + j; ptr < x + s; ptr += m) {
+		for (ptr = x + j; ptr < end; ptr += m) {
 			sd = *ptr;
 			Ex += sd;
 			Exx += sd * sd;
@@ -27,17 +26,16 @@ void autoscaling(double* const x, const int n, const int m) {
 		sd = fabs(Exx - Ex * Ex);
 		if (sd == 0.0) sd = 1.0;
 		sd = 1.0 / sqrt(sd);
-		for (ptr = x + j; ptr < x + s; ptr += m) {
+		for (ptr = x + j; ptr < end; ptr += m) {
 			*ptr = (*ptr - Ex) * sd;
 		}
 	}
 }
 
 char constr(const int *y, const int val, int s) {
-	while (s > 0) {
+	for (; s > 0; --s) {
 		if (*y == val) return 1;
 		++y;
-		--s;
 	}
 	return 0;
 }
@@ -71,7 +69,8 @@ int get_cluster(const double* const x, const double* const c, const int m, int k
 	return res;
 }
 
-void det_start_partition(const double* const x, const double* const c, int* const y, int* const nums, int n, const int m, const int k) {
+int* det_start_partition(const double* const x, const double* const c, int* const nums, int n, const int m, const int k) {
+	int *y = (int*)malloc(n * sizeof(int));
 	memset(nums, 0, k * sizeof(int));
 	while (n > 0) {
 		--n;
@@ -79,6 +78,7 @@ void det_start_partition(const double* const x, const double* const c, int* cons
 		y[n] = l;
 		++nums[l];
 	}
+	return y;
 }
 
 char check_partition(const double* const x, double* const c, int* const y, int* const nums, const int n, const int m, const int k) {
@@ -109,16 +109,31 @@ char check_partition(const double* const x, double* const c, int* const y, int* 
 	return flag;
 }
 
-void kmeans(const double* const X, int* const y, const int n, const int m, const int k) {
+int* kmeans(const double* const X, const int n, const int m, const int k) {
 	double *x = (double*)malloc(n * m * sizeof(double));
 	memcpy(x, X, n * m * sizeof(double));
 	autoscaling(x, n, m);
 	double *c = (double*)malloc(k * m * sizeof(double));
 	det_cores(x, c, n, m, k);
 	int *nums = (int*)malloc(k * sizeof(int));
-	det_start_partition(x, c, y, nums, n, m, k);
+	int *y = det_start_partition(x, c, nums, n, m, k);
+	if (!y) return NULL;
 	while (check_partition(x, c, y, nums, n, m, k));
 	free(x);
 	free(c);
 	free(nums);
+	return y;
+}
+
+/* k-means without scaling data at the beginning */
+int* kmeans_ws(const double* const x, const int n, const int m, const int k) {
+	double *c = (double*)malloc(k * m * sizeof(double));
+	det_cores(x, c, n, m, k);
+	int *nums = (int*)malloc(k * sizeof(int));
+	int *y = det_start_partition(x, c, nums, n, m, k);
+	if (!y) return NULL;
+	while (check_partition(x, c, y, nums, n, m, k));
+	free(c);
+	free(nums);
+	return y;
 }

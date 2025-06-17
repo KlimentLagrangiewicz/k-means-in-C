@@ -62,12 +62,13 @@ void fscanf_splitting(const char *fn, int *y, const int n) {
 }
 
 double get_precision(int *x, int *y, const int n) {
-	int i, j, yy = 0, ny = 0;
+	unsigned long yy = 0ul, ny = 0ul;
+	int i, j;
 	for (i = 0; i < n; ++i) {
 		for (j = i + 1; j < n; ++j) {
 			if (x[i] == x[j] && y[i] == y[j]) ++yy;
 			if (x[i] != x[j] && y[i] == y[j]) ++ny;
 		}
 	}
-	return yy == 0 && ny == 0 ? 0.0 : (double)yy / (double)(yy + ny);
+	return yy == 0ul && ny == 0ul ? 0.0 : (double)yy / (double)(yy + ny);
 }
